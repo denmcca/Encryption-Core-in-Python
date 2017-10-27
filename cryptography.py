@@ -8,6 +8,7 @@ import os
 #import sys
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import padding
 #from cryptography.hazmat.primitives.asymmetric import rsa
 
 def Myencrypt(message, key) :
@@ -15,12 +16,18 @@ def Myencrypt(message, key) :
         print("Error: Key is {} bytes. 32-byte (256-bits) key required.".format(len(key)))
         return None, None;
     
+    #padding message to guarantee 16 bytes
+    padder = padding.PKCS7(8*16).padder()
+    padded_message = padder.update(message)
+    padded_message = padder.finalize()
+    print("padded_message: {}".format(padded_message))
+    
     backend = default_backend()
     IV = os.urandom(16)
     cipher = Cipher(algorithms.AES(key), modes.CBC(IV), backend=backend)
-    encryptor = cipher.encryptor()
+    encryptor = cipher.encryptor() #encryptor mode turned on
     buf = bytearray(31)
-    len_encrypted = encryptor.update_into(message, buf)
+    len_encrypted = encryptor.update_into(padded_message, buf)
     C = bytes(buf[:len_encrypted]) + encryptor.finalize()
     return C, IV
 
@@ -33,7 +40,7 @@ def Mydecrypt(C, key, IV):
     backend = default_backend()
     cipher = Cipher(algorithms.AES(key), modes.CBC(IV), backend=backend)
     decryptor = cipher.decryptor()
-    buf = bytearray(31)
+    buf = bytearray(32)
     len_decrypted = decryptor.update_into(C, buf)
     message = bytes(buf[:len_decrypted]) + decryptor.finalize()
     return message
@@ -49,7 +56,9 @@ def MyfileEncrypt(path):
     with open(path, 'r+b') as f:
         while 1: 
             byte_s = f.read(16)
+#            buf = bytearray(16)
             if not byte_s:
+#            if len(byte_s) < 16:
                 f.close()
                 break
             byte = byte_s
