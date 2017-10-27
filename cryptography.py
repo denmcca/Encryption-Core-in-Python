@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 #from cryptography.hazmat.primitives.asymmetric import rsa
 
-def Myencrypt(m, key) :
+def Myencrypt(message, key) :
     print("Myencrypt1")
     if len(key) < 32:
         print("Error: Key must be at least 32 bytes (256-bits)")
@@ -19,23 +19,24 @@ def Myencrypt(m, key) :
     
     backend = default_backend()
     print("Myencrypt3")
-    iv = os.urandom(16)
+    IV = os.urandom(16)
     print("Myencrypt4")
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+    cipher = Cipher(algorithms.AES(key), modes.CBC(IV), backend=backend)
     print("Myencrypt5")
     encryptor = cipher.encryptor()
     print("Myencrypt6")
     buf = bytearray(31)
     print("Myencrypt7")
-    len_encrypted = encryptor.update_into(m, buf)
+    len_encrypted = encryptor.update_into(message, buf)
     print("Myencrypt8")
-    ct = bytes(buf[:len_encrypted]) + encryptor.finalize()
+    C = bytes(buf[:len_encrypted]) + encryptor.finalize()
     print("Myencrypt9")
-    decryptor = cipher.decryptor()
+#    decryptor = cipher.decryptor()
     print("Myencrypt10")
-    len_decrypted = decryptor.update_into(ct, buf)
+#    len_decrypted = decryptor.update_into(C, buf)
     print("Myencrypt11")
-    return [bytes(buf[:len_decrypted]) + decryptor.finalize(), iv];
+#    return [bytes(buf[:len_decrypted]) + decryptor.finalize(), IV];
+    return [C, IV]
 
 def Mydecrypt(ct, key, iv):
     print("start mydecrypt")
@@ -54,7 +55,7 @@ def Mydecrypt(ct, key, iv):
     print("mydecrypt5")
     len_decrypted = decryptor.update_into(ct, buf)
     print("mydecrypt6")
-    return [bytes(buf[:len_decrypted]) + decryptor.finalize()]
+    return bytes(buf[:len_decrypted]) + decryptor.finalize()
     
 
 def MyfileEncrypt(path):
@@ -73,7 +74,7 @@ def MyfileEncrypt(path):
     return [C, IV, k32B, None]
 
 
-msg = b"junkjunkjunkjunk"
+pt0 = b"junkjunkjunkjunk"
 
 #key = codecs.encode(os.urandom(32), 'hex').decode()
 key = os.urandom(32)
@@ -83,10 +84,17 @@ print(str(key))
 print(sys.getsizeof(key))
 print(len(key))
 
-[ct, iv] = Myencrypt(msg, key)
+print("Plaintext:")
+print(pt0)
 
-print("Decrypted message:")
-print(Mydecrypt(ct, key, iv))
+[ct, iv] = Myencrypt(pt0, key)
+print("Ciphertext:")
+print(ct)
+
+pt1 = Mydecrypt(ct, key, iv)
+
+print("Plaintext (deciphered):")
+print(pt1)
 
 #[C, IV, key] = MyfileEncrypt('C:/Users/phala/Documents/OneDrive/CSULB/Fall 2017/CECS 378/Encrypt.decrypt/test.txt')
 
