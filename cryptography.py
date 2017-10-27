@@ -5,73 +5,70 @@ Created on Tue Oct 17 13:47:20 2017
 @author: Dennis
 """
 import os 
-import sys
+#import sys
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 #from cryptography.hazmat.primitives.asymmetric import rsa
 
 def Myencrypt(message, key) :
-    print("Myencrypt1")
     if len(key) < 32:
-        print("Error: Key must be at least 32 bytes (256-bits)")
-        return [None, None];
-    print("Myencrypt2")
+        print("Error: Key is {} bytes. 32-byte (256-bits) key required.".format(len(key)))
+        return None, None;
     
     backend = default_backend()
-    print("Myencrypt3")
     IV = os.urandom(16)
-    print("Myencrypt4")
     cipher = Cipher(algorithms.AES(key), modes.CBC(IV), backend=backend)
-    print("Myencrypt5")
     encryptor = cipher.encryptor()
-    print("Myencrypt6")
     buf = bytearray(31)
-    print("Myencrypt7")
     len_encrypted = encryptor.update_into(message, buf)
-    print("Myencrypt8")
     C = bytes(buf[:len_encrypted]) + encryptor.finalize()
-    print("Myencrypt9")
-#    decryptor = cipher.decryptor()
-    print("Myencrypt10")
-#    len_decrypted = decryptor.update_into(C, buf)
-    print("Myencrypt11")
-#    return [bytes(buf[:len_decrypted]) + decryptor.finalize(), IV];
-    return [C, IV]
+    return C, IV
 
-def Mydecrypt(ct, key, iv):
-    print("start mydecrypt")
+
+def Mydecrypt(C, key, IV):
     if len(key) < 32:
-        print("Error: Key must be 32 bytes (256-bits)")
-        return [None, None]
+        print("Error: Key is {} bytes. 32-byte (256-bit) key required.".format(len(key)))
+        return None, None
     
-    print("mydecrypt1")
     backend = default_backend()
-    print("mydecrypt2")
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
-    print("mydecrypt3")
+    cipher = Cipher(algorithms.AES(key), modes.CBC(IV), backend=backend)
     decryptor = cipher.decryptor()
-    print("mydecrypt4")
     buf = bytearray(31)
-    print("mydecrypt5")
-    len_decrypted = decryptor.update_into(ct, buf)
-    print("mydecrypt6")
-    return bytes(buf[:len_decrypted]) + decryptor.finalize()
+    len_decrypted = decryptor.update_into(C, buf)
+    message = bytes(buf[:len_decrypted]) + decryptor.finalize()
+    return message
     
 
 def MyfileEncrypt(path):
+#    1. Generate a 32Byte key. 
     k32B = os.urandom(32)
-    with open("C:\\Users\\phala\\Documents\\OneDrive\\CSULB\\Fall 2017\\CECS 378\\Encrypt.decrypt\\cryptography\\test.txt", 'rb') as f:
+#    2. Open and read the file as a string. 
+    filename, ext = os.path.splitext(path)
+    print(ext)
+    C = ""
+    with open(path, 'r+b') as f:
         while 1: 
-            byte_s = f.read(8)
+            byte_s = f.read(16)
             if not byte_s:
+                f.close()
                 break
-            byte = byte_s[0]
-            print(byte)
+            byte = byte_s
+            print('{} byte chunk: {}'.format(len(byte), byte))
+            eb = Myencrypt(byte_s, k32B)
+            C += str(eb[0])
+            print('ciphertext from file: {}'.format(C))
+            
+    f = open("encrypted.txt", 'w+')
+    f.write(C)
+    f.close()
     
-    m8B = b'adf3'
-    
-    [C, IV] = Myencrypt(m8B, k32B)
-    return [C, IV, k32B, None]
+    IV = eb[1]
+    return C, IV, k32B, ext
+
+
+def MyfileDecrypt(filepath):
+    return    
+    pass
 
 
 pt0 = b"junkjunkjunkjunk"
@@ -79,39 +76,22 @@ pt0 = b"junkjunkjunkjunk"
 #key = codecs.encode(os.urandom(32), 'hex').decode()
 key = os.urandom(32)
 
-print("key:")
-print(str(key))
-print(sys.getsizeof(key))
-print(len(key))
+#print("key:")
+#print(str(key))
+#print(sys.getsizeof(key))
+#print(len(key))
 
-print("Plaintext:")
-print(pt0)
+print("Plaintext: {}".format(pt0))
 
-[ct, iv] = Myencrypt(pt0, key)
-print("Ciphertext:")
-print(ct)
+ct, iv = Myencrypt(pt0, key)
+print("Ciphertext: {}".format(ct))
 
 pt1 = Mydecrypt(ct, key, iv)
 
-print("Plaintext (deciphered):")
-print(pt1)
+print("Plaintext (deciphered): {}".format(pt1))
 
-#[C, IV, key] = MyfileEncrypt('C:/Users/phala/Documents/OneDrive/CSULB/Fall 2017/CECS 378/Encrypt.decrypt/test.txt')
+ct, iv, key, ext = MyfileEncrypt('test.txt')
+
+print("File's ciphertext: {}".format(ct))
 
 #ciphermsg = "ciphertext: " + str(ct, "utf-8")
-#ivmsg = "initialization vector: " + iv
-
-#print(ciphermsg)
-
-#print(ivmsg)
-
-#
-#import OS
-#from cryptography.fernet import Fernet
-#
-#key = Fernet.generate_key()
-#f = Fernet(key)
-#token = f.encrypt(b"A really secret message. Not for prying eyes.")
-#token
-#
-#f.decrypt(token)
