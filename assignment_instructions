@@ -6,38 +6,38 @@ You will design these modules:
   • MyfileDecrypt(filepath)
 
 (C, IV)= Myencrypt(message, key):
-  1.	Generate a 16 Bytes IV.
-  2.	Encrypt the message using the key and IV in CBC mode (AES).  
-  3.	Return an error if the len(key) < 32 .
-    a.	i.e., the key has to be 32 bytes= 256 bits.
+  1. Generate a 16 Bytes IV.
+  2. Encrypt the message using the key and IV in CBC mode (AES).  
+  3. Return an error if the len(key) < 32 .
+    a. i.e., the key has to be 32 bytes= 256 bits.
 
 (C, IV, key, ext)= MyfileEncrypt (filepath):
-  1.	Generate a 32Byte key. 
-  2.	Open and read the file as a string. 
-  3.	Call the above method to encrypt file using the key generated. 
-  4.	Return:
-    a.	cipher C
-    b.	IV
-    c.	key
-    d.	extension of the file (as a string).
+  1. Generate a 32Byte key. 
+  2. Open and read the file as a string. 
+  3. Call the above method to encrypt file using the key generated. 
+  4. Return:
+    a. cipher C
+    b. IV
+    c. key
+    d. extension of the file (as a string).
 
 Write the inverse of the above methods. 
 Must be able to:
-  1.	Encrypt a JPEG file.
-  2.	Decrypt the JPEG file.
-  a.	Make sure that it is still viewable.
+  1. Encrypt a JPEG file.
+  2. Decrypt the JPEG file.
+  a. Make sure that it is still viewable.
  
 Next part of assignment:
-  •	Write this method:
-    o	RSACipher, C, IV, ext)= MyRSAEncrypt(filepath, RSA_Publickey_filepath
-  •	Call MyfileEncrypt (filepath)
-    o	Returns (C, IV, key, ext)
-  •	Initialize an RSA public key encryption object and load pem publickey from the RSA_publickey_filepath. 
-  •	Encrypt key variable ("key") using  RSA publickey in OAEP padding mode.
-    o	The result will be RSACipher.
-  •	Return (RSACipher, C, IV, ext). 
-  •	Do the inverse (MyRSADecrypt (RSACipher, C, IV, ext, RSA_Privatekey_filepath))
-    o	Does the exactly inverse of the above.
-    o	Generate decrypted file using previous decryption methods.
+  • Write this method:
+    o RSACipher, C, IV, ext)= MyRSAEncrypt(filepath, RSA_Publickey_filepath
+  • Call MyfileEncrypt (filepath)
+    o Returns (C, IV, key, ext)
+  • Initialize an RSA public key encryption object and load pem publickey from the RSA_publickey_filepath. 
+  • Encrypt key variable ("key") using  RSA publickey in OAEP padding mode.
+    o The result will be RSACipher.
+  • Return (RSACipher, C, IV, ext). 
+  • Do the inverse (MyRSADecrypt (RSACipher, C, IV, ext, RSA_Privatekey_filepath))
+    o Does the exactly inverse of the above.
+    o Generate decrypted file using previous decryption methods.
 Use Github to commit and push all of your code so the instructor can see your source.
 
