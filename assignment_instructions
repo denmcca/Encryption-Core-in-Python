@@ -1,7 +1,7 @@
 In this phase, you'll develop modules that will encrypt/decrypt a file.
 You will design these modules:
   • Myencrypt(message, key)
-  •	Mydecrypt()
+  • Mydecrypt()
   • MyfileEncrypt(filepath)
   • MyfileDecrypt(filepath)
 
