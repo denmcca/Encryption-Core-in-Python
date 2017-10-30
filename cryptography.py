@@ -9,98 +9,113 @@ import os
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
-#from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa
 
-def Myencrypt(message, key) :
+key = os.urandom(32)
+
+
+def MyfileEncrypt(filepath):
+    print("**********entered MyfileEncrypt**********")
+#    1. Generate a 32Byte key. 
+#    2. Open and read the file as a string. 
+    filename, ext = os.path.splitext(filepath)
+#    print(os.path.abspath(filepath))
+#    print(filename)
+#    print(ext)
+    f = open(filepath, 'r')
+    data = f.read()
+    
+    
+    
+        
+#    3.	Call the above method to encrypt file using the key generated. 
+    
+    encrypted_block, iv = Myencrypt(data.encode(), key)
+        
+    ciphertext = encrypted_block
+    f.close()
+    
+    
+    
+    f = open('encrypted.txt', 'w+b')
+    f.write(iv + ciphertext)
+    f.close()
+    
+    
+    print("----------exiting MyfileEncrypt----------")
+#    4.	Return:
+#        a.	cipher C
+#        b.	IV
+#        c.	key
+#        d.	extension of the file (as a string).
+    return ciphertext, iv, key, ext
+
+def Myencrypt(message, key) : #constrain: bytes message
+    print("*****entered Myencrypt*****")
     if len(key) < 32:
         print("Error: Key is {} bytes. 32-byte (256-bits) key required.".format(len(key)))
         return None, None;
-    
-    #padding message to guarantee 16 bytes
-    padder = padding.PKCS7(8*16).padder()
-    padded_message = padder.update(message)
-    padded_message = padder.finalize()
-    print("padded_message: {}".format(padded_message))
-    
+
     backend = default_backend()
-    IV = os.urandom(16)
-    cipher = Cipher(algorithms.AES(key), modes.CBC(IV), backend=backend)
-    encryptor = cipher.encryptor() #encryptor mode turned on
-    buf = bytearray(31)
-    len_encrypted = encryptor.update_into(padded_message, buf)
-    C = bytes(buf[:len_encrypted]) + encryptor.finalize()
-    return C, IV
+    iv = os.urandom(16)
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
+    encryptor = cipher.encryptor() #encryptor mode turned on  
+    
+    #padding message to guarantee 16 bytes    
+    padder = padding.PKCS7(128).padder()
+    padded_message = padder.update(message)
+    padded_message = padded_message + padder.finalize()
+    
+    cipher_out = encryptor.update(padded_message)
+    print("-----exiting Myencrypt-----")
+    return cipher_out, iv #return bytes for C
 
+def MyfileDecrypt(filepath):
+    print("**********entered MyfileDecrypt**********")
+    filename, ext = os.path.splitext(filepath)
+    f = open(filepath, 'r+b')
+    iv = f.read(16)
+    data = f.read()
+    f.close()
 
-def Mydecrypt(C, key, IV):
+    decrypted_message, iv_out = Mydecrypt(data, key, iv)   
+       
+    f = open("decrypted.txt", 'w')
+    f.write(decrypted_message.decode())
+    f.close()
+            
+    print("----------exiting MyfileDecrypt---------")
+    return decrypted_message, iv_out, key, ext
+
+def Mydecrypt(c_message, key, iv):
+    print("*****entered Mydecrypt*****")
+    
     if len(key) < 32:
         print("Error: Key is {} bytes. 32-byte (256-bit) key required.".format(len(key)))
         return None, None
-    
+      
     backend = default_backend()
-    cipher = Cipher(algorithms.AES(key), modes.CBC(IV), backend=backend)
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
     decryptor = cipher.decryptor()
-    buf = bytearray(32)
-    len_decrypted = decryptor.update_into(C, buf)
-    message = bytes(buf[:len_decrypted]) + decryptor.finalize()
-    return message
+
+    padded_message = decryptor.update(c_message)
+    padder = padding.PKCS7(128).unpadder()
+    unencrypted_message = padder.update(padded_message)
+    unencrypted_message = unencrypted_message + padder.finalize()
     
-
-def MyfileEncrypt(path):
-#    1. Generate a 32Byte key. 
-    k32B = os.urandom(32)
-#    2. Open and read the file as a string. 
-    filename, ext = os.path.splitext(path)
-    print(ext)
-    C = ""
-    with open(path, 'r+b') as f:
-        while 1: 
-            byte_s = f.read(16)
-#            buf = bytearray(16)
-            if not byte_s:
-#            if len(byte_s) < 16:
-                f.close()
-                break
-            byte = byte_s
-            print('{} byte chunk: {}'.format(len(byte), byte))
-            eb = Myencrypt(byte_s, k32B)
-            C += str(eb[0])
-            print('ciphertext from file: {}'.format(C))
-            
-    f = open("encrypted.txt", 'w+')
-    f.write(C)
-    f.close()
-    
-    IV = eb[1]
-    return C, IV, k32B, ext
+    print("-----exiting Mydecrypt-----")
+    return unencrypted_message, iv
 
 
-def MyfileDecrypt(filepath):
-    return    
-    pass
 
 
-pt0 = b"junkjunkjunkjunk"
-
-#key = codecs.encode(os.urandom(32), 'hex').decode()
-key = os.urandom(32)
-
-#print("key:")
-#print(str(key))
-#print(sys.getsizeof(key))
-#print(len(key))
-
-print("Plaintext: {}".format(pt0))
-
-ct, iv = Myencrypt(pt0, key)
-print("Ciphertext: {}".format(ct))
-
-pt1 = Mydecrypt(ct, key, iv)
-
-print("Plaintext (deciphered): {}".format(pt1))
 
 ct, iv, key, ext = MyfileEncrypt('test.txt')
 
-print("File's ciphertext: {}".format(ct))
+print("ct: {}, iv: {}, key: {}, ext: {}".format(ct, iv, key,ext))
 
-#ciphermsg = "ciphertext: " + str(ct, "utf-8")
+print("******************DECRYPTING FROM FILE***********************")
+
+dt, div, key, extd = MyfileDecrypt('encrypted.txt')
+
+print("dt: {}, div: {}, key: {}, extd: {}".format(dt,div,key,extd))
