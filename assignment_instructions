@@ -1,9 +1,9 @@
 In this phase, you'll develop modules that will encrypt/decrypt a file.
 You will design these modules:
   • Myencrypt(message, key)
-  • Mydecrypt()
+  • Mydecrypt(C, IV, key)
   • MyfileEncrypt(filepath)
-  • MyfileDecrypt()
+  • MyfileDecrypt(filepath, IV, key)
 
 (C, IV)= Myencrypt(message, key):
   1. Generate a 16 Bytes IV.
