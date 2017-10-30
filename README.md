@@ -1,2 +1,2 @@
 # PrettyGoodPartners
-Repository for CECS 328
+Repository for CECS 378
