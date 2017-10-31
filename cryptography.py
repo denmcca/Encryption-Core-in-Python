@@ -7,7 +7,6 @@ Created on Tue Oct 17 13:47:20 2017
 import os
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
@@ -119,7 +118,7 @@ def MyfileDecrypt(filepath):
 
 
 
-def MyRSAEncrypt(self, filepath, RSA_Publickey_filepath):
+def MyRSAEncrypt(filepath, RSA_Publickey_filepath):
     from cryptography.hazmat.primitives.asymmetric import padding
 
     C, IV, key, ext = MyfileEncrypt(filepath)
@@ -129,7 +128,7 @@ def MyRSAEncrypt(self, filepath, RSA_Publickey_filepath):
             pem.read(),
             password = None,
             backend = default_backend())
-    pem.close()
+    pem.close()      
     
     publickey = privatekey.public_key()
     RSACipher = publickey.encrypt(
@@ -139,9 +138,10 @@ def MyRSAEncrypt(self, filepath, RSA_Publickey_filepath):
                     algorithm = hashes.SHA512(),
                     label = None))
     
+    print('key: {}', key)
     return RSACipher, C, IV, ext #RSACipher is the 
 
-def MyRSADecrypt(self, RSACipher, C, IV, ext, RSA_Privatekey_filepath):
+def MyRSADecrypt(RSACipher, C, IV, ext, RSA_Privatekey_filepath):
     from cryptography.hazmat.primitives.asymmetric import padding
 
     pem = open(RSA_Privatekey_filepath, 'rb')
@@ -151,15 +151,23 @@ def MyRSADecrypt(self, RSACipher, C, IV, ext, RSA_Privatekey_filepath):
             backend = default_backend())
     pem.close()
     
-    deciphered_message = privatekey.decrypt(
-            C, 
+    deciphered_key = privatekey.decrypt(
+            RSACipher, 
             padding.OAEP(
                     mgf = padding.MGF1(algorithm = hashes.SHA512()),
                     algorithm = hashes.SHA512(),
                     label = None))
-    print(deciphered_message)
+    print(deciphered_key)
+    
+    with open('pkey.txt', 'wb') as f:
+        f.write(deciphered_key)
+        f.close()
+        
+    
+    filepath = 'pkey.txt'
     
     return filepath, RSA_Privatekey_filepath
+    pass
 
 
 
@@ -232,5 +240,5 @@ print("dt: {}, div: {}, key: {}, extd: {}".format(dt,div,key,extd))
 
 RSACipher, C, iv, ext = MyRSAEncrypt('test.txt', 'PGP_OURFIRSTSERVER.pem')
 print(RSACipher, C, iv, ext)
-#filepath, RSAfilepath = MyRSADecrypt(RSACipher, C, iv, ext, 'PGP_OURFIRSTSERVER.pem')
-#print(filepath, RSAfilepath)
+filepath, RSAfilepath = MyRSADecrypt(RSACipher, C, iv, ext, 'PGP_OURFIRSTSERVER.pem')
+print(filepath, RSAfilepath)
