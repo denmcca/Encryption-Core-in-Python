@@ -26,7 +26,7 @@ key_size = 32
 iv_size = 16
 padding_size = 128
 
-key = os.urandom(32)
+key = os.urandom(key_size)
 
 #----------------------Key Generation------------------------
 def genKeys(filepath_to_pem_file):
@@ -134,7 +134,7 @@ def Mydecrypt(c_message, key, iv):
 #-----------------------------Myfile-----------------------   
 def MyfileEncrypt(decrypted_filepath):
     #generating 32 byte key
-    key = os.urandom(32) #must be inside this function
+    key = os.urandom(key_size) #must be inside this function
 
     #splitting filepath into filename and ext
     filename, ext = os.path.splitext(decrypted_filepath)
@@ -218,7 +218,7 @@ def MyRSADecrypt(RSACipher, C, IV, ext, RSA_Privatekey_filepath):
 
 #-----------------------------String test-----------------------------
 print('\n\nBEGIN MYENCRYPT AND MYDECRYPT STRING TEST')
-string_key = os.urandom(32)
+string_key = os.urandom(key_size)
 string_to_enc = "This is the test string to test out the encryption and decryption process."
 print('string to encrypt: ' + string_to_enc)
 string_enc, string_iv = Myencrypt(string_to_enc, string_key)
@@ -230,7 +230,7 @@ print('END MYENCRYPT AND MYDECRYPT STRING TEST')
 
 #-----------------------------Plaintext message-----------------------
 print('\n\nBEGIN MYENCRYPT AND MYDECRYPT PLAINTEXT FILE TEST')
-file_key = os.urandom(32)
+file_key = os.urandom(key_size)
 with open('test.txt', 'rb') as f:
     print('Plaintext to encrypt then decrypt: {}'.format(f.read()))    
     file_enc, iv = Myencrypt(f.read(), file_key)
@@ -241,7 +241,7 @@ print('END MYENCRYPT AND MYEDECRYPT PLAINTEXT FILE TEST')
 
 #-----------------------------Image test-----------------------
 print('\n\nBEGIN MYENCRYPT AND MYDECRYPT IMAGE FILE TEST')
-image_key = os.urandom(32)
+image_key = os.urandom(key_size)
 with open(image_file_name, 'rb') as f:
     file_enc, iv = Myencrypt(f.read(), image_key)
 with open(path_output + encrypted_file_name + '.' + image_file_name, 'wb') as f:
