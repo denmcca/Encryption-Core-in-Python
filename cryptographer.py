@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.asymmetric import padding as apadding
 
 path_output = './output/'
-path_keys = '/keys/'
+path_keys = './keys/'
 image_file_name = 'image.jpeg'
 encrypted_file_name = 'encrypted'
 decrypted_file_name = 'decrypted'
@@ -26,8 +26,11 @@ key_size = 32
 iv_size = 16
 padding_size = 128
 
-key = os.urandom(key_size)
 
+def validateDir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
 #----------------------Key Generation------------------------
 def genKeys(filepath_to_pem_file):
     with open(filepath_to_pem_file, 'rb') as pem:
@@ -42,7 +45,9 @@ def genKeys(filepath_to_pem_file):
         encryption_algorithm = serialization.NoEncryption()
     )
     
-    with open(private_key_file_name + key_ext, 'w') as f:
+    validateDir(path_keys)
+    
+    with open(path_keys + private_key_file_name + key_ext, 'w') as f:
         f.write(pem.decode())
         
     public_key = private_key.public_key()
@@ -52,7 +57,7 @@ def genKeys(filepath_to_pem_file):
         format = serialization.PublicFormat.SubjectPublicKeyInfo
     )
         
-    with open(public_key_file_name + key_ext, 'w') as f:
+    with open(path_keys + public_key_file_name + key_ext, 'w') as f:
         f.write(pem.decode())
         
     return
@@ -142,7 +147,9 @@ def MyfileEncrypt(decrypted_filepath):
     #opening file to encrypt
     with open(decrypted_filepath, 'rb') as f:
         data = f.read()        
-        ciphertext, iv = Myencrypt(data, key)
+        ciphertext, iv = Myencrypt(data, key)        
+  
+    validateDir(path_output)
     
     with open(path_output + encrypted_file_name + ext, 'wb') as f:
         f.write(ciphertext)
@@ -202,7 +209,7 @@ def MyRSADecrypt(RSACipher, C, IV, ext, RSA_Privatekey_filepath):
     
     path = path_output + rsa_decrypted_file_name + ext;
     
-    with open(path_output + rsa_decrypted_file_name + ext, 'wb') as f:
+    with open(path, 'wb') as f:
         f.write(message)
         
     return path
@@ -214,7 +221,7 @@ def MyRSADecrypt(RSACipher, C, IV, ext, RSA_Privatekey_filepath):
 
 #-----------------------------Begin Testing----------------------------
 
-#genKeys('PGP_OURFIRSTSERVER.pem')
+genKeys('PGP_OURFIRSTSERVER.pem')
 
 #-----------------------------String test-----------------------------
 print('\n\nBEGIN MYENCRYPT AND MYDECRYPT STRING TEST')
@@ -244,10 +251,14 @@ print('\n\nBEGIN MYENCRYPT AND MYDECRYPT IMAGE FILE TEST')
 image_key = os.urandom(key_size)
 with open(image_file_name, 'rb') as f:
     file_enc, iv = Myencrypt(f.read(), image_key)
+    print("image file encrypted to memory.")
+validateDir(path_output)
 with open(path_output + encrypted_file_name + '.' + image_file_name, 'wb') as f:
     f.write(file_enc)
+    print("encrypted image file created.")
 with open(path_output + decrypted_file_name + '.' + image_file_name, 'wb') as f:
     f.write(Mydecrypt(file_enc, image_key, iv))
+    print("encrypted image decrypted to file.\ncheck output directory for files.")
 print('END MYENCRYPT AND MYEDECRYPT IMAGE FILE TEST')
 #-----------------------------/Image test-----------------------
 
@@ -265,18 +276,22 @@ print('END MYFILEENCRYPT AND MYFILEEDECRYPT PLAINTEXT FILE TEST')
 
 #-----------------------------Test MyRsa-----------------------
 print('\n\nBEGIN MYRSA TEST')
-RSACipher, C, iv, ext = MyRSAEncrypt('test.txt', public_key_file_name + key_ext)
+validateDir(path_keys)
+RSACipher, C, iv, ext = MyRSAEncrypt('test.txt', path_keys + public_key_file_name + key_ext)
 print('ciphertext received: {}'.format(C))
-filepath = MyRSADecrypt(RSACipher, C, iv, ext, private_key_file_name + key_ext)
+filepath = MyRSADecrypt(RSACipher, C, iv, ext, path_keys + private_key_file_name + key_ext)
 with open(filepath, 'r') as f:
     print('decipered text: {}'.format(f.read()))
 print('END MYRSA TEST')
 #-----------------------------/Test MyRsa-----------------------
 
 #-----------------------------Test MyRsa Image-----------------------
-print('\n\nBEGIN MYRSA TEST')
-RSACipher, C, iv, ext = MyRSAEncrypt('image.jpeg', public_key_file_name + key_ext)
-print('ciphertext received: {}'.format(C))
-filepath = MyRSADecrypt(RSACipher, C, iv, ext, private_key_file_name + key_ext)
-print('END MYRSA TEST')
+print('\n\nBEGIN MYRSA IMAGE TEST')
+validateDir(path_keys)
+RSACipher, C, iv, ext = MyRSAEncrypt('image.jpeg', path_keys + public_key_file_name + key_ext)
+#print('ciphertext received: {}'.format(C))
+print('image and key encrypted with public key.')
+filepath = MyRSADecrypt(RSACipher, C, iv, ext, path_keys + private_key_file_name + key_ext)
+print('key decrypted and used to decrypt image.\nfiles saved to output directory.')
+print('END MYRSA IMAGE TEST')
 #-----------------------------/Test MyRsa Image-----------------------
