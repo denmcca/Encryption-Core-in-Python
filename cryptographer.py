@@ -109,15 +109,10 @@ def Mydecrypt(c_message, key, iv):
     if len(key) < key_size:
         print("Error: Key is {} bytes. 32-byte (256-bit) key required.".format(len(key)))
         return None, None
-    
-#    print("test0: {}".format(c_message))
-    
+      
     #confirming that c_message is a bytes object
     if not isinstance(c_message, bytes):
-        c_message = bytes(c_message, 'utf-8')
-    
-#    print("test1: {}".format(c_message))
-    
+        c_message = bytes(c_message, 'utf-8')   
     
     #setting Cipher object
     cipher = Cipher(algorithms.AES(key), modes.CBC(iv), default_backend())
@@ -129,9 +124,7 @@ def Mydecrypt(c_message, key, iv):
     
     deciphered_text = decryptor.update(c_message)
     unpadded_text = padder.update(deciphered_text)
-#    print('unpadded_text: {}'.format(unpadded_text))
     end_text = padder.finalize()
-#    print('unpadded_text + padder.finalize(): {}'.format(unpadded_text), end_text)
     
     #padder.update is decrypted message, padder.finalize removes padding from padded block
     return unpadded_text + end_text
@@ -153,22 +146,10 @@ def MyfileEncrypt(decrypted_filepath):
     
     with open(path_output + encrypted_file_name + ext, 'wb') as f:
         f.write(ciphertext)
-    
-#    4.	Return:
-#        a.	cipher C
-#        b.	IV
-#        c.	key
-#        d.	extension of the file (as a string).
+
     return ciphertext, iv, key, ext
 
 def MyfileDecrypt(ciphertext, iv, key, ext): #key is wrapped 
-    #splitting file name and extension
-#    filename, ext = os.path.splitext(encrypted_file_path)
-    
-    #opening file using filepath to get iv and encrypted message
-#    with open( + ext, 'rb') as f:
-#        iv = f.read(iv_size)
-#        data = f.read()
     
     #sending encrypted data and iv to be decrypted
     decrypted_message = Mydecrypt(ciphertext, key, iv) #where does key come from?   
@@ -229,7 +210,6 @@ string_key = os.urandom(key_size)
 string_to_enc = "This is the test string to test out the encryption and decryption process."
 print('string to encrypt: ' + string_to_enc)
 string_enc, string_iv = Myencrypt(string_to_enc, string_key)
-#print('string encrypted: {}\niv: {}'.format(string_enc, string_iv))
 print('string decrypted {}'.format(Mydecrypt(string_enc, string_key, string_iv)))  
 print('END MYENCRYPT AND MYDECRYPT STRING TEST')  
 #-----------------------------/String test----------------------------
@@ -289,7 +269,6 @@ print('END MYRSA TEST')
 print('\n\nBEGIN MYRSA IMAGE TEST')
 validateDir(path_keys)
 RSACipher, C, iv, ext = MyRSAEncrypt('image.jpeg', path_keys + public_key_file_name + key_ext)
-#print('ciphertext received: {}'.format(C))
 print('image and key encrypted with public key.')
 filepath = MyRSADecrypt(RSACipher, C, iv, ext, path_keys + private_key_file_name + key_ext)
 print('key decrypted and used to decrypt image.\nfiles saved to output directory.')
