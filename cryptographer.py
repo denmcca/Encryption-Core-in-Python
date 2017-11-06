@@ -202,8 +202,9 @@ def MyRSADecrypt(RSACipher, C, IV, ext, RSA_Privatekey_filepath):
 
 #-----------------------------Begin Testing----------------------------
 
-genKeys('PGP_OURFIRSTSERVER.pem')
-
+if not os.path.exists(path_keys):
+    genKeys('PGP_OURFIRSTSERVER.pem')
+    
 #-----------------------------String test-----------------------------
 print('\n\nBEGIN MYENCRYPT AND MYDECRYPT STRING TEST')
 string_key = os.urandom(key_size)
